@@ -31,9 +31,20 @@ jobs:
           name: nursing-short
           path: output/nursing_short.mp4
           retention-days: 7
+      - name: Send generated MP4 to Make (when configured)
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.upload_private != true) }}
+        env:
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
+          MAKE_WEBHOOK_API_KEY: ${{ secrets.MAKE_WEBHOOK_API_KEY }}
+        run: |
+          if [[ -n "$MAKE_WEBHOOK_URL" ]]; then
+            python3 scripts/send_to_make.py
+          else
+            echo '::notice::MAKE_WEBHOOK_URL not set; video artifact saved, Make upload skipped.'
+          fi
       - name: Check YouTube credentials (skip safely if missing)
         id: youtube_check
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.upload_private == true) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_private == true }}
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
