@@ -1,0 +1,17 @@
+[
+  {
+    "title": "HAND HYGIENE",
+    "narration": "Hand hygiene is a key infection prevention measure in healthcare. Follow your facility's current hand hygiene guidance, including when to clean hands before and after patient contact. Gloves do not replace hand hygiene.",
+    "description": "General nursing education. Consult WHO hand hygiene guidance and your facility policy. https://www.who.int/teams/integrated-health-services/infection-prevention-control/hand-hygiene"
+  },
+  {
+    "title": "PATIENT ID CHECK",
+    "narration": "Before medication administration or specimen collection, use at least two approved patient identifiers according to your facility policy. Do not use a room number as a patient identifier. Check local protocols.",
+    "description": "General nursing education. Verify against your facility patient-identification policy."
+  },
+  {
+    "title": "SBAR HANDOVER",
+    "narration": "SBAR stands for Situation, Background, Assessment, and Recommendation. It provides a structured way to communicate clinical concerns. Use it alongside your organization's escalation and handover policy.",
+    "description": "General nursing education. Verify against your organization's handover policy."
+  }
+]
