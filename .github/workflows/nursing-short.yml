@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       upload_private:
-        description: "Upload to YouTube privately (requires OAuth secrets)"
+        description: "Upload a PRIVATE test to YouTube (requires OAuth secrets)"
         required: true
         default: false
         type: boolean
@@ -33,7 +33,7 @@ jobs:
           retention-days: 7
       - name: Check YouTube credentials (skip safely if missing)
         id: youtube_check
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_private == true }}
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.upload_private == true) }}
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
@@ -45,12 +45,13 @@ jobs:
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "::warning::YouTube upload skipped: configure all three OAuth secrets first. Video artifact is available."
           fi
-      - name: Upload PRIVATE test to YouTube (manual runs only)
+      - name: Upload YouTube Short (scheduled or manual private test)
         if: ${{ steps.youtube_check.outputs.ready == 'true' }}
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          YOUTUBE_VISIBILITY: ${{ github.event_name == 'schedule' && vars.PUBLIC_UPLOAD_ENABLED == 'true' && 'public' || 'private' }}
         run: |
           python3 -m pip install --quiet --break-system-packages google-api-python-client google-auth google-auth-httplib2
           python3 scripts/upload_private.py
