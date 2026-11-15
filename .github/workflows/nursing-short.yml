@@ -29,8 +29,22 @@ jobs:
           name: nursing-short
           path: output/nursing_short.mp4
           retention-days: 7
-      - name: Upload PRIVATE test to YouTube (manual runs only)
+      - name: Check YouTube credentials (skip safely if missing)
+        id: youtube_check
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_private == true }}
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          if [[ -n "$YOUTUBE_CLIENT_ID" && -n "$YOUTUBE_CLIENT_SECRET" && -n "$YOUTUBE_REFRESH_TOKEN" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::YouTube upload skipped: configure all three OAuth secrets first. Video artifact is available."
+          fi
+      - name: Upload PRIVATE test to YouTube (manual runs only)
+        if: ${{ steps.youtube_check.outputs.ready == 'true' }}
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
