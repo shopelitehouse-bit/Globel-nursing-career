@@ -1,0 +1,40 @@
+name: Build nursing Short
+on:
+  workflow_dispatch:
+    inputs:
+      upload_private:
+        description: "Upload to YouTube privately (requires OAuth secrets)"
+        required: true
+        default: false
+        type: boolean
+  schedule:
+    - cron: '30 12 * * *'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install free media tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg espeak-ng fonts-dejavu-core
+      - name: Create video
+        run: python3 scripts/build_video.py
+      - name: Save video as downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nursing-short
+          path: output/nursing_short.mp4
+          retention-days: 7
+      - name: Upload PRIVATE test to YouTube (manual runs only)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_private == true }}
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          python3 -m pip install --quiet --break-system-packages google-api-python-client google-auth google-auth-httplib2
+          python3 scripts/upload_private.py
